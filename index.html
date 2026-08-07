@@ -1,1 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="theme-color"
+    content="#0d1b2a"
+  >
+
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
+
+  <title>Reporting Tool</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6f8;
+      color: #0d1b2a;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 0 16px 35px;
+    }
+
+    /* HEADER */
+
+    .brand-header {
+      margin: 0 -16px 25px;
+      padding: 18px;
+      background: #0d1b2a;
+      color: white;
+
+      display: flex;
+      align-items: center;
+
+      box-shadow:
+        0 3px 12px rgba(13,27,42,.18);
+    }
+
+    .brand-logo {
+      width: 46px;
+      height: 46px;
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+
+    .brand-logo svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .brand-name {
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: -.4px;
+    }
+
+    .brand-subtitle {
+      margin-top: 3px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.3px;
+      opacity: .72;
+    }
+
+    /* DATE / TOTAL */
+
+    .date-area,
+    .total-area {
+      width: 100%;
+      margin-bottom: 18px;
+    }
+
+    .date-area label,
+    .total-area label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 7px;
+      color: #344454;
+    }
+
+    #reportDate,
+    #totalDisplay {
+      width: 100%;
+      height: 50px;
+      padding: 0 14px;
+
+      font-size: 16px;
+
+      border: 1px solid #d9dee5;
+      border-radius: 11px;
+
+      background: white;
+      color: #0d1b2a;
+
+      outline: none;
+    }
+
+    #totalDisplay {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #totalDisplay::after {
+      content: "⌄";
+      font-size: 20px;
+      color: #536273;
+    }
+
+    /* ADD */
+
+    .input-area {
+      display: flex;
+      width: 100%;
+      gap: 9px;
+      margin: 7px 0 20px;
+    }
+
+    #title {
+      flex: 1;
+      min-width: 0;
+
+      height: 50px;
+      padding: 0 14px;
+
+      font-size: 16px;
+
+      border: 1px solid #d9dee5;
+      border-radius: 11px;
+
+      background: white;
+      color: #0d1b2a;
+
+      outline: none;
+    }
+
+    #addButton {
+      flex-shrink: 0;
+
+      height: 50px;
+      padding: 0 20px;
+
+      font-size: 15px;
+      font-weight: 700;
+
+      border: none;
+      border-radius: 11px;
+
+      background: #1e63c6;
+      color: white;
+
+      cursor: pointer;
+    }
+
+    /* LIST */
+
+    #list {
+      width: 100%;
+
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item {
+      width: 100%;
+
+      background: white;
+
+      border-radius: 12px;
+      border: 1px solid #e5e8ec;
+
+      box-shadow:
+        0 2px 7px rgba(13,27,42,.055);
+
+      overflow: hidden;
+    }
+
+    .item-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      min-height: 58px;
+
+      padding: 9px 10px;
+    }
+
+    .item-title {
+      flex: 1;
+      min-width: 0;
+
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 22px;
+
+      color: #152536;
+
+      word-break: break-word;
+      overflow-wrap: anywhere;
+
+      cursor: pointer;
+
+      padding: 7px 4px;
+    }
+
+    /* ITEM PICKER */
+
+    .item-picker {
+      flex-shrink: 0;
+
+      width: 54px;
+      height: 40px;
+
+      background: #edf3fb;
+      color: #1e63c6;
+
+      border: 1px solid #d5e2f4;
+      border-radius: 9px;
+
+      cursor: pointer;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .item-picker::after {
+      content: "⌄";
+      margin-left: 3px;
+      font-size: 13px;
+    }
+
+    /* EDIT / DELETE */
+
+    .edit-button,
+    .delete-button {
+      flex-shrink: 0;
+
+      height: 40px;
+      min-width: 55px;
+
+      padding: 0 8px;
+
+      border-radius: 9px;
+
+      font-size: 13px;
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    .edit-button {
+      background: #f1f3f5;
+      color: #263746;
+      border: 1px solid #e0e4e8;
+    }
+
+    .delete-button {
+      background: #fff1f1;
+      color: #d62828;
+      border: 1px solid #f4d5d5;
+    }
+
+    /* COMMENTS */
+
+    .comment-area {
+      display: none;
+      padding: 0 12px 12px;
+    }
+
+    .item.expanded .comment-area {
+      display: block;
+    }
+
+    .comment-input {
+      width: 100%;
+      min-height: 70px;
+
+      padding: 11px 12px;
+
+      font-family: Arial, sans-serif;
+      font-size: 15px;
+      line-height: 20px;
+
+      border: 1px solid #dce2e8;
+      border-radius: 10px;
+
+      background: #f8fafc;
+
+      resize: vertical;
+      outline: none;
+    }
+
+    /* SEND */
+
+    .send-area {
+      width: 100%;
+      margin-top: 25px;
+    }
+
+    #sendButton {
+      width: 100%;
+      height: 53px;
+
+      border: none;
+      border-radius: 12px;
+
+      background: #0d1b2a;
+      color: white;
+
+      font-size: 16px;
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    /* PICKER */
+
+    .picker-overlay {
+      display: none;
+
+      position: fixed;
+
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      background: rgba(5,15,25,.5);
+
+      z-index: 1000;
+
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .picker-overlay.active {
+      display: flex;
+    }
+
+    .picker {
+      width: 100%;
+      max-width: 620px;
+
+      background: white;
+
+      border-radius: 20px 20px 0 0;
+
+      padding: 15px 16px 25px;
+    }
+
+    .picker-title {
+      text-align: center;
+
+      font-size: 17px;
+      font-weight: 700;
+
+      margin-bottom: 12px;
+    }
+
+    .picker-window {
+      position: relative;
+
+      height: 220px;
+
+      overflow: hidden;
+
+      border-radius: 12px;
+
+      background: #f5f7fa;
+    }
+
+    .picker-list {
+      height: 100%;
+
+      overflow-y: auto;
+
+      scroll-snap-type: y mandatory;
+
+      scrollbar-width: none;
+
+      padding-top: 88px;
+      padding-bottom: 88px;
+    }
+
+    .picker-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .picker-number {
+      height: 44px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 21px;
+
+      scroll-snap-align: center;
+
+      color: #687585;
+    }
+
+    .picker-center {
+      position: absolute;
+
+      top: 88px;
+      left: 10px;
+      right: 10px;
+
+      height: 44px;
+
+      border-top: 1px solid #b8c9dc;
+      border-bottom: 1px solid #b8c9dc;
+
+      pointer-events: none;
+    }
+
+    .picker-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .picker-cancel,
+    .picker-done {
+      flex: 1;
+
+      height: 48px;
+
+      border-radius: 11px;
+
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .picker-cancel {
+      background: #eef0f2;
+      color: #253443;
+      border: 1px solid #dde1e5;
+    }
+
+    .picker-done {
+      background: #1e63c6;
+      color: white;
+      border: none;
+    }
+
+    @media (max-width: 380px) {
+
+      .app {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .brand-header {
+        margin-left: -10px;
+        margin-right: -10px;
+      }
+
+      .brand-name {
+        font-size: 21px;
+      }
+
+      .item-picker {
+        width: 50px;
+      }
+
+      .edit-button,
+      .delete-button {
+        min-width: 49px;
+        padding: 0 5px;
+        font-size: 12px;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="brand-header">
+
+    <div class="brand-logo">
+
+      <svg
+        viewBox="0 0 64 64"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+
+        <rect
+          x="15"
+          y="10"
+          width="34"
+          height="45"
+          rx="5"
+          fill="none"
+          stroke="white"
+          stroke-width="4"
+        />
+
+        <rect
+          x="24"
+          y="5"
+          width="16"
+          height="10"
+          rx="4"
+          fill="white"
+        />
+
+        <rect
+          x="22"
+          y="32"
+          width="5"
+          height="14"
+          rx="1"
+          fill="#3b82f6"
+        />
+
+        <rect
+          x="30"
+          y="26"
+          width="5"
+          height="20"
+          rx="1"
+          fill="#3b82f6"
+        />
+
+        <rect
+          x="38"
+          y="20"
+          width="5"
+          height="26"
+          rx="1"
+          fill="#3b82f6"
+        />
+
+        <circle
+          cx="47"
+          cy="48"
+          r="11"
+          fill="#3b82f6"
+          stroke="#0d1b2a"
+          stroke-width="2"
+        />
+
+        <path
+          d="M42 48 L46 52 L53 44"
+          fill="none"
+          stroke="white"
+          stroke-width="2.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+
+      </svg>
+
+    </div>
+
+    <div>
+
+      <div class="brand-name">
+        Reporting Tool
+      </div>
+
+      <div class="brand-subtitle">
+        REPORT • ANALYZE • IMPROVE
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="date-area">
+
+    <label for="reportDate">
+      Report date
+    </label>
+
+    <input
+      type="date"
+      id="reportDate"
+    >
+
+  </div>
+
+
+  <div class="total-area">
+
+    <label>
+      Total
+    </label>
+
+    <div
+      id="totalDisplay"
+      tabindex="0"
+    >
+
+      <span id="totalValue">
+        1
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <div class="input-area">
+
+    <input
+      type="text"
+      id="title"
+      placeholder="Enter title"
+      autocomplete="off"
+    >
+
+    <button id="addButton">
+      Add
+    </button>
+
+  </div>
+
+
+  <div id="list"></div>
+
+
+  <div class="send-area">
+
+    <button id="sendButton">
+      ✉ Send by Email
+    </button>
+
+  </div>
+
+</div>
+
+
+<div
+  class="picker-overlay"
+  id="pickerOverlay"
+>
+
+  <div class="picker">
+
+    <div
+      class="picker-title"
+      id="pickerTitle"
+    >
+      Select Total
+    </div>
+
+    <div class="picker-window">
+
+      <div
+        class="picker-list"
+        id="pickerList"
+      ></div>
+
+      <div class="picker-center"></div>
+
+    </div>
+
+    <div class="picker-buttons">
+
+      <button
+        class="picker-cancel"
+        id="pickerCancel"
+      >
+        Cancel
+      </button>
+
+      <button
+        class="picker-done"
+        id="pickerDone"
+      >
+        Done
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+const SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbwF_7RIdIDYksgPkZnj7R_Tr50tfLUeLyaqJcmPyjqI7I084JzsVqHBFx_oQ0NMVDruXg/exec";
+
+
+const button =
+  document.getElementById("addButton");
+
+const input =
+  document.getElementById("title");
+
+const list =
+  document.getElementById("list");
+
+const sendButton =
+  document.getElementById("sendButton");
+
+const reportDate =
+  document.getElementById("reportDate");
+
+const totalDisplay =
+  document.getElementById("totalDisplay");
+
+const totalValue =
+  document.getElementById("totalValue");
+
+const pickerOverlay =
+  document.getElementById("pickerOverlay");
+
+const pickerList =
+  document.getElementById("pickerList");
+
+const pickerTitle =
+  document.getElementById("pickerTitle");
+
+const pickerCancel =
+  document.getElementById("pickerCancel");
+
+const pickerDone =
+  document.getElementById("pickerDone");
+
+
+let pickerMode = "total";
+let pickerItem = null;
+
+
+/* DATE */
+
+const today =
+  new Date();
+
+const year =
+  today.getFullYear();
+
+const month =
+  String(
+    today.getMonth() + 1
+  ).padStart(2, "0");
+
+const day =
+  String(
+    today.getDate()
+  ).padStart(2, "0");
+
+const todayString =
+  year + "-" +
+  month + "-" +
+  day;
+
+const savedDate =
+  localStorage.getItem(
+    "reportingDate"
+  );
+
+reportDate.value =
+  savedDate || todayString;
+
+
+/* TOTAL STORAGE */
+
+let totalsByDate =
+  JSON.parse(
+    localStorage.getItem(
+      "reportingTotals"
+    )
+  ) || {};
+
+
+function loadTotalForDate() {
+
+  const date =
+    reportDate.value;
+
+  const savedTotal =
+    totalsByDate[date];
+
+  totalValue.textContent =
+    savedTotal === undefined
+      ? 1
+      : savedTotal;
+}
+
+
+loadTotalForDate();
+
+
+reportDate.addEventListener(
+  "change",
+  function() {
+
+    localStorage.setItem(
+      "reportingDate",
+      reportDate.value
+    );
+
+    loadTotalForDate();
+
+  }
+);
+
+
+/* PICKER NUMBERS */
+
+for (
+  let number = 1;
+  number <= 50;
+  number++
+) {
+
+  const element =
+    document.createElement("div");
+
+  element.className =
+    "picker-number";
+
+  element.textContent =
+    number;
+
+  element.dataset.value =
+    number;
+
+  pickerList.appendChild(
+    element
+  );
+
+}
+
+
+/* TOTAL PICKER */
+
+totalDisplay.addEventListener(
+  "click",
+  function() {
+
+    pickerMode = "total";
+    pickerItem = null;
+
+    pickerTitle.textContent =
+      "Select Total";
+
+    openPicker(
+      parseInt(
+        totalValue.textContent
+      )
+    );
+
+  }
+);
+
+
+function openPicker(current) {
+
+  pickerOverlay.classList.add(
+    "active"
+  );
+
+  setTimeout(
+    function() {
+
+      scrollToNumber(
+        current,
+        false
+      );
+
+    },
+    50
+  );
+
+}
+
+
+function scrollToNumber(
+  number,
+  smooth
+) {
+
+  const element =
+    pickerList.querySelector(
+      '[data-value="' +
+      number +
+      '"]'
+    );
+
+  if (!element) {
+    return;
+  }
+
+  element.scrollIntoView({
+
+    behavior:
+      smooth
+        ? "smooth"
+        : "auto",
+
+    block: "center"
+
+  });
+
+}
+
+
+function getSelectedNumber() {
+
+  const elements =
+    pickerList.querySelectorAll(
+      ".picker-number"
+    );
+
+  const rect =
+    pickerList.getBoundingClientRect();
+
+  const center =
+    rect.top +
+    rect.height / 2;
+
+  let closest = null;
+
+  let closestDistance =
+    Infinity;
+
+
+  elements.forEach(
+    function(element) {
+
+      const elementRect =
+        element.getBoundingClientRect();
+
+      const elementCenter =
+        elementRect.top +
+        elementRect.height / 2;
+
+      const distance =
+        Math.abs(
+          center -
+          elementCenter
+        );
+
+      if (
+        distance <
+        closestDistance
+      ) {
+
+        closestDistance =
+          distance;
+
+        closest =
+          element;
+
+      }
+
+    }
+  );
+
+
+  if (!closest) {
+    return 1;
+  }
+
+  return parseInt(
+    closest.dataset.value
+  );
+
+}
+
+
+/* PICKER DONE */
+
+pickerDone.addEventListener(
+  "click",
+  function() {
+
+    const selected =
+      getSelectedNumber();
+
+
+    if (
+      pickerMode ===
+      "total"
+    ) {
+
+      totalValue.textContent =
+        selected;
+
+      totalsByDate[
+        reportDate.value
+      ] = selected;
+
+      localStorage.setItem(
+        "reportingTotals",
+        JSON.stringify(
+          totalsByDate
+        )
+      );
+
+    }
+
+
+    if (
+      pickerMode ===
+      "item" &&
+      pickerItem
+    ) {
+
+      const display =
+        pickerItem.querySelector(
+          ".item-picker"
+        );
+
+      display.dataset.value =
+        selected;
+
+      display.textContent =
+        selected;
+
+      saveItems();
+
+    }
+
+
+    pickerOverlay.classList.remove(
+      "active"
+    );
+
+  }
+);
+
+
+/* CANCEL */
+
+pickerCancel.addEventListener(
+  "click",
+  function() {
+
+    pickerOverlay.classList.remove(
+      "active"
+    );
+
+  }
+);
+
+
+/* CLOSE OVERLAY */
+
+pickerOverlay.addEventListener(
+  "click",
+  function(event) {
+
+    if (
+      event.target ===
+      pickerOverlay
+    ) {
+
+      pickerOverlay.classList.remove(
+        "active"
+      );
+
+    }
+
+  }
+);
+
+
+/* LOAD ITEMS */
+
+const savedItems =
+  JSON.parse(
+    localStorage.getItem(
+      "reportingItems"
+    )
+  ) || [];
+
+
+savedItems.forEach(
+  function(item) {
+
+    if (
+      typeof item === "string"
+    ) {
+
+      createItem(
+        item,
+        "",
+        1
+      );
+
+    } else {
+
+      createItem(
+        item.title || "",
+        item.comment || "",
+        item.number || 1
+      );
+
+    }
+
+  }
+);
+
+
+/* ADD */
+
+button.addEventListener(
+  "click",
+  function() {
+
+    const value =
+      input.value.trim();
+
+    if (
+      value === ""
+    ) {
+
+      return;
+
+    }
+
+    createItem(
+      value,
+      "",
+      1
+    );
+
+    saveItems();
+
+    input.value = "";
+
+    input.focus();
+
+  }
+);
+
+
+/* ENTER */
+
+input.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (
+      event.key ===
+      "Enter"
+    ) {
+
+      button.click();
+
+    }
+
+  }
+);
+
+
+/* CREATE ITEM */
+
+function createItem(
+  value,
+  comment,
+  number
+) {
+
+  const item =
+    document.createElement("div");
+
+  item.className =
+    "item";
+
+
+  const header =
+    document.createElement("div");
+
+  header.className =
+    "item-header";
+
+
+  /* TITLE */
+
+  const text =
+    document.createElement("div");
+
+  text.className =
+    "item-title";
+
+  text.textContent =
+    value;
+
+
+  text.addEventListener(
+    "click",
+    function() {
+
+      item.classList.toggle(
+        "expanded"
+      );
+
+    }
+  );
+
+
+  /* PICKER */
+
+  const itemPicker =
+    document.createElement("div");
+
+  itemPicker.className =
+    "item-picker";
+
+  itemPicker.dataset.value =
+    number || 1;
+
+  itemPicker.textContent =
+    number || 1;
+
+
+  itemPicker.addEventListener(
+    "click",
+    function(event) {
+
+      event.stopPropagation();
+
+      pickerMode =
+        "item";
+
+      pickerItem =
+        item;
+
+      pickerTitle.textContent =
+        "Select number";
+
+      openPicker(
+        parseInt(
+          itemPicker.dataset.value
+        )
+      );
+
+    }
+  );
+
+
+  /* EDIT */
+
+  const editButton =
+    document.createElement("button");
+
+  editButton.className =
+    "edit-button";
+
+  editButton.textContent =
+    "Edit";
+
+
+  editButton.addEventListener(
+    "click",
+    function(event) {
+
+      event.stopPropagation();
+
+      const newValue =
+        prompt(
+          "Edit title:",
+          text.textContent
+        );
+
+      if (
+        newValue !== null &&
+        newValue.trim() !== ""
+      ) {
+
+        text.textContent =
+          newValue.trim();
+
+        saveItems();
+
+      }
+
+    }
+  );
+
+
+  /* DELETE */
+
+  const deleteButton =
+    document.createElement("button");
+
+  deleteButton.className =
+    "delete-button";
+
+  deleteButton.textContent =
+    "Delete";
+
+
+  deleteButton.addEventListener(
+    "click",
+    function(event) {
+
+      event.stopPropagation();
+
+      item.remove();
+
+      saveItems();
+
+    }
+  );
+
+
+  /* COMMENT */
+
+  const commentArea =
+    document.createElement("div");
+
+  commentArea.className =
+    "comment-area";
+
+
+  const commentInput =
+    document.createElement("textarea");
+
+  commentInput.className =
+    "comment-input";
+
+  commentInput.placeholder =
+    "Enter comment...";
+
+  commentInput.value =
+    comment || "";
+
+
+  commentInput.addEventListener(
+    "input",
+    function() {
+
+      saveItems();
+
+    }
+  );
+
+
+  /* BUILD */
+
+  header.appendChild(text);
+  header.appendChild(itemPicker);
+  header.appendChild(editButton);
+  header.appendChild(deleteButton);
+
+  commentArea.appendChild(
+    commentInput
+  );
+
+  item.appendChild(header);
+  item.appendChild(commentArea);
+
+  list.appendChild(item);
+
+}
+
+
+/* SAVE */
+
+function saveItems() {
+
+  const items = [];
+
+  const allItems =
+    list.children;
+
+
+  for (
+    let i = 0;
+    i < allItems.length;
+    i++
+  ) {
+
+    const text =
+      allItems[i].querySelector(
+        ".item-title"
+      );
+
+    const comment =
+      allItems[i].querySelector(
+        ".comment-input"
+      );
+
+    const picker =
+      allItems[i].querySelector(
+        ".item-picker"
+      );
+
+
+    items.push({
+
+      title:
+        text.textContent,
+
+      comment:
+        comment.value,
+
+      number:
+        parseInt(
+          picker.dataset.value
+        )
+
+    });
+
+  }
+
+
+  localStorage.setItem(
+    "reportingItems",
+    JSON.stringify(items)
+  );
+
+}
+
+
+/* FORMAT DATE */
+
+function formatDate(
+  dateString
+) {
+
+  const parts =
+    dateString.split("-");
+
+  return (
+    parts[2] +
+    "/" +
+    parts[1] +
+    "/" +
+    parts[0]
+  );
+
+}
+
+
+/* SEND EMAIL */
+
+sendButton.addEventListener(
+  "click",
+  async function() {
+
+    const items = [];
+
+    const allItems =
+      list.children;
+
+
+    for (
+      let i = 0;
+      i < allItems.length;
+      i++
+    ) {
+
+      const text =
+        allItems[i].querySelector(
+          ".item-title"
+        );
+
+      const comment =
+        allItems[i].querySelector(
+          ".comment-input"
+        );
+
+      const picker =
+        allItems[i].querySelector(
+          ".item-picker"
+        );
+
+
+      items.push({
+
+        title:
+          text.textContent,
+
+        comment:
+          comment.value,
+
+        number:
+          parseInt(
+            picker.dataset.value
+          )
+
+      });
+
+    }
+
+
+    if (
+      items.length === 0
+    ) {
+
+      alert(
+        "There are no items to send."
+      );
+
+      return;
+
+    }
+
+
+    const email =
+      prompt(
+        "Enter email address:"
+      );
+
+
+    if (
+      !email ||
+      email.trim() === ""
+    ) {
+
+      return;
+
+    }
+
+
+    const data = {
+
+      email:
+        email.trim(),
+
+      reportDate:
+        formatDate(
+          reportDate.value
+        ),
+
+      total:
+        parseInt(
+          totalValue.textContent
+        ),
+
+      items:
+        items
+
+    };
+
+
+    sendButton.disabled =
+      true;
+
+    sendButton.textContent =
+      "Sending...";
+
+
+    try {
+
+      const form =
+        new URLSearchParams();
+
+      form.append(
+        "data",
+        JSON.stringify(data)
+      );
+
+
+      const response =
+        await fetch(
+          SCRIPT_URL,
+          {
+            method: "POST",
+            body: form
+          }
+        );
+
+
+      const result =
+        await response.text();
+
+
+      if (
+        result.startsWith(
+          "Error:"
+        )
+      ) {
+
+        throw new Error(
+          result
+        );
+
+      }
+
+
+      alert(
+        "Email sent successfully!"
+      );
+
+
+    } catch (error) {
+
+      alert(
+        "Error sending email.\n\n" +
+        error.message
+      );
+
+
+    } finally {
+
+      sendButton.disabled =
+        false;
+
+      sendButton.textContent =
+        "✉ Send by Email";
+
+    }
+
+  }
+);
+
+
+/* SERVICE WORKER */
+
+if (
+  "serviceWorker" in navigator
+) {
+
+  window.addEventListener(
+    "load",
+    function() {
+
+      navigator.serviceWorker
+        .register(
+          "service-worker.js"
+        )
+        .catch(
+          function(error) {
+
+            console.log(
+              "Service Worker error:",
+              error
+            );
+
+          }
+        );
+
+    }
+  );
+
+}
+
+</script>
+
+</body>
+</html>
