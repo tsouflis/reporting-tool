@@ -126,42 +126,14 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-
-      cursor: pointer;
       user-select: none;
-    }
-
-    #totalDisplay::after {
-      content: "⌄";
-      font-size: 20px;
-      color: #536273;
     }
 
     /* ADD */
 
     .input-area {
-      display: flex;
       width: 100%;
-      gap: 9px;
       margin: 7px 0 20px;
-    }
-
-    #title {
-      flex: 1;
-      min-width: 0;
-
-      height: 50px;
-      padding: 0 14px;
-
-      font-size: 16px;
-
-      border: 1px solid #d9dee5;
-      border-radius: 11px;
-
-      background: white;
-      color: #0d1b2a;
-
-      outline: none;
     }
 
     #addButton ,#downloadButton {
@@ -435,6 +407,20 @@
       color: #687585;
     }
 
+    .picker-reason {
+      height: 44px;
+      padding: 4px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 15px;
+      line-height: 18px;
+      font-weight: 600;
+      scroll-snap-align: center;
+      color: #687585;
+    }
+
     .picker-center {
       position: absolute;
 
@@ -625,19 +611,10 @@
 
   <div class="total-area">
 
-    <label>
-      Total
-    </label>
+    <label>Total</label>
 
-    <div
-      id="totalDisplay"
-      tabindex="0"
-    >
-
-      <span id="totalValue">
-        1
-      </span>
-
+    <div id="totalDisplay">
+      <span id="totalValue">0</span>
     </div>
 
   </div>
@@ -645,14 +622,7 @@
 
   <div class="input-area">
 
-    <input
-      type="text"
-      id="title"
-      placeholder="Enter title"
-      autocomplete="off"
-    >
-
-    <button id="addButton">
+    <button id="addButton" style="width:100%;">
       Add
     </button>
 
@@ -734,9 +704,6 @@ const SCRIPT_URL =
 const button =
   document.getElementById("addButton");
 
-const input =
-  document.getElementById("title");
-
 const list =
   document.getElementById("list");
 
@@ -745,9 +712,6 @@ const sendButton =
 
 const reportDate =
   document.getElementById("reportDate");
-
-const totalDisplay =
-  document.getElementById("totalDisplay");
 
 const totalValue =
   document.getElementById("totalValue");
@@ -768,7 +732,7 @@ const pickerDone =
   document.getElementById("pickerDone");
 
 
-let pickerMode = "total";
+let pickerMode = "reason";
 let pickerItem = null;
 
 
@@ -804,210 +768,177 @@ reportDate.value =
   savedDate || todayString;
 
 
-/* TOTAL STORAGE */
+/* TOTAL */
 
-let totalsByDate =
-  JSON.parse(
-    localStorage.getItem(
-      "reportingTotals"
-    )
-  ) || {};
+function updateTotal() {
 
+  const allItems = list.children;
+  let total = 0;
 
-function loadTotalForDate() {
+  for (let i = 0; i < allItems.length; i++) {
+    const picker = allItems[i].querySelector(".item-picker");
+    total += parseInt(picker?.dataset.value || 0);
+  }
 
-  const date =
-    reportDate.value;
-
-  const savedTotal =
-    totalsByDate[date];
-
-  totalValue.textContent =
-    savedTotal === undefined
-      ? 1
-      : savedTotal;
+  totalValue.textContent = total;
 }
 
 
-loadTotalForDate();
+/* PICKER OPTIONS */
+
+const reasons = [
+  "Customer does not want the order anymore.",
+  "Late Delivery",
+  "Damaged / Spilled Item",
+  "Never Delivered / Hijack",
+  "Mistake by user",
+  "Wrong Items Delivered",
+  "Duplicate Order",
+  "Outside Delivery Area",
+  "Unable to find User",
+  "Bad Weather",
+  "Accident",
+  "Unable to pay",
+  "Prank",
+  "Unprofessional behaviour (Rider)",
+  "Voucher not applied",
+  "Address incomplete / misstated",
+  "Order modification not possible",
+  "Customer received wrong order",
+  "Order Quality",
+  "Technical Problem",
+  "Other"
+];
 
 
-reportDate.addEventListener(
-  "change",
-  function() {
+function renderPickerOptions(mode) {
 
-    localStorage.setItem(
-      "reportingDate",
-      reportDate.value
-    );
+  pickerList.innerHTML = "";
 
-    loadTotalForDate();
+  if (mode === "reason") {
+
+    reasons.forEach(function(reason) {
+      const element = document.createElement("div");
+      element.className = "picker-reason";
+      element.textContent = reason;
+      element.dataset.value = reason;
+      pickerList.appendChild(element);
+    });
+
+  } else {
+
+    for (let number = 1; number <= 50; number++) {
+      const element = document.createElement("div");
+      element.className = "picker-number";
+      element.textContent = number;
+      element.dataset.value = number;
+      pickerList.appendChild(element);
+    }
 
   }
-);
-
-
-/* PICKER NUMBERS */
-
-for (
-  let number = 1;
-  number <= 50;
-  number++
-) {
-
-  const element =
-    document.createElement("div");
-
-  element.className =
-    "picker-number";
-
-  element.textContent =
-    number;
-
-  element.dataset.value =
-    number;
-
-  pickerList.appendChild(
-    element
-  );
-
 }
 
 
-/* TOTAL PICKER */
+/* ADD / REASON PICKER */
 
-totalDisplay.addEventListener(
-  "click",
-  function() {
+button.addEventListener("click", function() {
 
-    pickerMode = "total";
-    pickerItem = null;
+  pickerMode = "reason";
+  pickerItem = null;
+  pickerTitle.textContent = "Select Reason";
+  openPicker(reasons[0]);
 
-    pickerTitle.textContent =
-      "Select Total";
-
-    openPicker(
-      parseInt(
-        totalValue.textContent
-      )
-    );
-
-  }
-);
+});
 
 
 function openPicker(current) {
 
-  pickerOverlay.classList.add(
-    "active"
-  );
+  renderPickerOptions(pickerMode);
+  pickerOverlay.classList.add("active");
 
-  setTimeout(
-    function() {
-
-      scrollToNumber(
-        current,
-        false
-      );
-
-    },
-    50
-  );
+  setTimeout(function() {
+    if (pickerMode === "reason") {
+      scrollToReason(current, false);
+    } else {
+      scrollToNumber(current, false);
+    }
+  }, 50);
 
 }
 
 
-function scrollToNumber(
-  number,
-  smooth
-) {
+function scrollToNumber(number, smooth) {
 
-  const element =
-    pickerList.querySelector(
-      '[data-value="' +
-      number +
-      '"]'
-    );
-
-  if (!element) {
-    return;
-  }
+  const element = pickerList.querySelector('[data-value="' + number + '"]');
+  if (!element) return;
 
   element.scrollIntoView({
-
-    behavior:
-      smooth
-        ? "smooth"
-        : "auto",
-
+    behavior: smooth ? "smooth" : "auto",
     block: "center"
+  });
+}
 
+
+function scrollToReason(reason, smooth) {
+
+  const elements = pickerList.querySelectorAll(".picker-reason");
+  let element = null;
+
+  elements.forEach(function(item) {
+    if (item.dataset.value === reason) element = item;
   });
 
+  if (!element) element = elements[0];
+  if (!element) return;
+
+  element.scrollIntoView({
+    behavior: smooth ? "smooth" : "auto",
+    block: "center"
+  });
 }
 
 
 function getSelectedNumber() {
 
-  const elements =
-    pickerList.querySelectorAll(
-      ".picker-number"
-    );
-
-  const rect =
-    pickerList.getBoundingClientRect();
-
-  const center =
-    rect.top +
-    rect.height / 2;
-
+  const elements = pickerList.querySelectorAll(".picker-number");
+  const rect = pickerList.getBoundingClientRect();
+  const center = rect.top + rect.height / 2;
   let closest = null;
+  let closestDistance = Infinity;
 
-  let closestDistance =
-    Infinity;
-
-
-  elements.forEach(
-    function(element) {
-
-      const elementRect =
-        element.getBoundingClientRect();
-
-      const elementCenter =
-        elementRect.top +
-        elementRect.height / 2;
-
-      const distance =
-        Math.abs(
-          center -
-          elementCenter
-        );
-
-      if (
-        distance <
-        closestDistance
-      ) {
-
-        closestDistance =
-          distance;
-
-        closest =
-          element;
-
-      }
-
+  elements.forEach(function(element) {
+    const elementRect = element.getBoundingClientRect();
+    const elementCenter = elementRect.top + elementRect.height / 2;
+    const distance = Math.abs(center - elementCenter);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closest = element;
     }
-  );
+  });
+
+  return closest ? parseInt(closest.dataset.value) : 1;
+}
 
 
-  if (!closest) {
-    return 1;
-  }
+function getSelectedReason() {
 
-  return parseInt(
-    closest.dataset.value
-  );
+  const elements = pickerList.querySelectorAll(".picker-reason");
+  const rect = pickerList.getBoundingClientRect();
+  const center = rect.top + rect.height / 2;
+  let closest = null;
+  let closestDistance = Infinity;
 
+  elements.forEach(function(element) {
+    const elementRect = element.getBoundingClientRect();
+    const elementCenter = elementRect.top + elementRect.height / 2;
+    const distance = Math.abs(center - elementCenter);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closest = element;
+    }
+  });
+
+  return closest ? closest.dataset.value : reasons[0];
 }
 
 
@@ -1017,50 +948,30 @@ pickerDone.addEventListener(
   "click",
   function() {
 
-    const selected =
-      getSelectedNumber();
+    if (pickerMode === "reason") {
 
-
-    if (
-      pickerMode ===
-      "total"
-    ) {
-
-      totalValue.textContent =
-        selected;
-
-      totalsByDate[
-        reportDate.value
-      ] = selected;
-
-      localStorage.setItem(
-        "reportingTotals",
-        JSON.stringify(
-          totalsByDate
-        )
-      );
+      const selectedReason = getSelectedReason();
+      createItem(selectedReason, "", 1);
+      saveItems();
+      updateTotal();
 
     }
 
 
-    if (
-      pickerMode ===
-      "item" &&
-      pickerItem
-    ) {
+    if (pickerMode === "item" && pickerItem) {
+
+      const selected = getSelectedNumber();
 
       const display =
         pickerItem.querySelector(
           ".item-picker"
         );
 
-      display.dataset.value =
-        selected;
-
-      display.textContent =
-        selected;
+      display.dataset.value = selected;
+      display.textContent = selected;
 
       saveItems();
+      updateTotal();
 
     }
 
@@ -1138,58 +1049,6 @@ savedItems.forEach(
         item.comment || "",
         item.number || 1
       );
-
-    }
-
-  }
-);
-
-
-/* ADD */
-
-button.addEventListener(
-  "click",
-  function() {
-
-    const value =
-      input.value.trim();
-
-    if (
-      value === ""
-    ) {
-
-      return;
-
-    }
-
-    createItem(
-      value,
-      "",
-      1
-    );
-
-    saveItems();
-
-    input.value = "";
-
-    input.focus();
-
-  }
-);
-
-
-/* ENTER */
-
-input.addEventListener(
-  "keydown",
-  function(event) {
-
-    if (
-      event.key ===
-      "Enter"
-    ) {
-
-      button.click();
 
     }
 
@@ -1283,46 +1142,6 @@ function createItem(
   );
 
 
-  /* EDIT */
-
-  const editButton =
-    document.createElement("button");
-
-  editButton.className =
-    "edit-button";
-
-  editButton.textContent =
-    "Edit";
-
-
-  editButton.addEventListener(
-    "click",
-    function(event) {
-
-      event.stopPropagation();
-
-      const newValue =
-        prompt(
-          "Edit title:",
-          text.textContent
-        );
-
-      if (
-        newValue !== null &&
-        newValue.trim() !== ""
-      ) {
-
-        text.textContent =
-          newValue.trim();
-
-        saveItems();
-
-      }
-
-    }
-  );
-
-
   /* DELETE */
 
   const deleteButton =
@@ -1344,6 +1163,7 @@ function createItem(
       item.remove();
 
       saveItems();
+      updateTotal();
 
     }
   );
@@ -1365,7 +1185,7 @@ function createItem(
     "comment-input";
 
   commentInput.placeholder =
-    "Enter comment...";
+    "Enter comment / feedback...";
 
   commentInput.value =
     comment || "";
@@ -1385,7 +1205,6 @@ function createItem(
 
   header.appendChild(text);
   header.appendChild(itemPicker);
-  header.appendChild(editButton);
   header.appendChild(deleteButton);
 
   commentArea.appendChild(
@@ -1396,8 +1215,12 @@ function createItem(
   item.appendChild(commentArea);
 
   list.appendChild(item);
+  updateTotal();
 
 }
+
+
+updateTotal();
 
 
 /* SAVE */
