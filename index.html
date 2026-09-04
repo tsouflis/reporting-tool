@@ -1504,377 +1504,461 @@ sendButton.addEventListener(
 
 
 downloadButton.addEventListener(
-  "click",
-  function() {
+  "click",
+  async function() {
 
-    const items = [];
+    const items = [];
 
-    const allItems =
-      list.children;
+    const allItems =
+      list.children;
 
+    for (
+      let i = 0;
+      i < allItems.length;
+      i++
+    ) {
 
-    for (
-      let i = 0;
-      i < allItems.length;
-      i++
-    ) {
+      const text =
+        allItems[i].querySelector(
+          ".item-title"
+        );
 
-      const text =
-        allItems[i].querySelector(
-          ".item-title"
-        );
+      const comment =
+        allItems[i].querySelector(
+          ".comment-input"
+        );
 
-      const comment =
-        allItems[i].querySelector(
-          ".comment-input"
-        );
+      const picker =
+        allItems[i].querySelector(
+          ".item-picker"
+        );
 
-      const picker =
-        allItems[i].querySelector(
-          ".item-picker"
-        );
+      items.push({
 
+        title:
+          text.textContent,
 
-      items.push({
+        comment:
+          comment.value,
 
-        title:
-          text.textContent,
+        number:
+          parseInt(
+            picker.dataset.value
+          )
 
-        comment:
-          comment.value,
+      });
 
-        number:
-          parseInt(
-            picker.dataset.value
-          )
+    }
 
-      });
+    if (
+      items.length === 0
+    ) {
 
-    }
+      alert(
+        "There are no items to download."
+      );
 
+      return;
 
-    if (
-      items.length === 0
-    ) {
+    }
 
-      alert(
-        "There are no items to download."
-      );
+    const reportDateText =
+      formatDate(
+        reportDate.value
+      );
 
-      return;
+    const total =
+      parseInt(
+        totalValue.textContent
+      );
 
-    }
+    /*
+     * CREATE REPORT
+     */
 
+    const canvas =
+      document.createElement(
+        "canvas"
+      );
 
-    const reportDateText =
-      formatDate(
-        reportDate.value
-      );
+    const ctx =
+      canvas.getContext(
+        "2d"
+      );
 
+    const width = 900;
 
-    const total =
-      parseInt(
-        totalValue.textContent
-      );
+    const padding = 60;
 
+    const lineHeight = 28;
 
-    /*
-     * CREATE REPORT
-     */
+    const itemSpacing = 35;
 
-    const canvas =
-      document.createElement(
-        "canvas"
-      );
+    let height = 260;
 
-    const ctx =
-      canvas.getContext(
-        "2d"
-      );
+    items.forEach(
+      function(item) {
 
+        height += 60;
 
-    const width = 900;
+        if (
+          item.comment &&
+          item.comment.trim() !== ""
+        ) {
 
-    const padding = 60;
+          const lines =
+            Math.ceil(
+              item.comment.length / 65
+            );
 
-    const lineHeight = 28;
+          height +=
+            lines * lineHeight;
 
-    const itemSpacing = 35;
+        }
 
+      }
+    );
 
-    let height =
-      260;
+    canvas.width =
+      width;
 
+    canvas.height =
+      height;
 
-    items.forEach(
-      function(item) {
+    /*
+     * BACKGROUND
+     */
 
-        height +=
-          60;
+    ctx.fillStyle =
+      "#ffffff";
 
-        if (
-          item.comment &&
-          item.comment.trim() !== ""
-        ) {
+    ctx.fillRect(
+      0,
+      0,
+      width,
+      height
+    );
 
-          const lines =
-            Math.ceil(
-              item.comment.length /
-              65
-            );
+    /*
+     * TITLE
+     */
 
-          height +=
-            lines *
-            lineHeight;
+    ctx.fillStyle =
+      "#0d1b2a";
 
-        }
+    ctx.font =
+      "bold 32px Arial";
 
-      }
-    );
+    ctx.fillText(
+      "Daily Report",
+      padding,
+      65
+    );
 
+    /*
+     * DATE
+     */
 
-    canvas.width =
-      width;
+    ctx.font =
+      "18px Arial";
 
-    canvas.height =
-      height;
+    ctx.fillStyle =
+      "#555555";
 
+    ctx.fillText(
+      "Report date",
+      padding,
+      110
+    );
 
-    /*
-     * BACKGROUND
-     */
+    ctx.fillStyle =
+      "#111111";
 
-    ctx.fillStyle =
-      "#ffffff";
+    ctx.font =
+      "bold 20px Arial";
 
-    ctx.fillRect(
-      0,
-      0,
-      width,
-      height
-    );
+    ctx.fillText(
+      reportDateText,
+      padding,
+      140
+    );
 
+    /*
+     * TOTAL
+     */
 
-    /*
-     * TITLE
-     */
+    ctx.fillStyle =
+      "#555555";
 
-    ctx.fillStyle =
-      "#0d1b2a";
+    ctx.font =
+      "18px Arial";
 
-    ctx.font =
-      "bold 32px Arial";
+    ctx.fillText(
+      "Total",
+      650,
+      110
+    );
 
-    ctx.fillText(
-      "Daily Report",
-      padding,
-      65
-    );
+    ctx.fillStyle =
+      "#3b82f6";
 
+    ctx.font =
+      "bold 32px Arial";
 
-    /*
-     * DATE
-     */
+    ctx.fillText(
+      String(total),
+      650,
+      145
+    );
 
-    ctx.font =
-      "18px Arial";
+    /*
+     * ITEMS
+     */
 
-    ctx.fillStyle =
-      "#555555";
+    let y = 210;
 
-    ctx.fillText(
-      "Report date",
-      padding,
-      110
-    );
+    items.forEach(
+      function(item) {
 
-    ctx.fillStyle =
-      "#111111";
+        ctx.fillStyle =
+          "#111111";
 
-    ctx.font =
-      "bold 20px Arial";
+        ctx.font =
+          "bold 20px Arial";
 
-    ctx.fillText(
-      reportDateText,
-      padding,
-      140
-    );
+        ctx.fillText(
+          item.title +
+          " — " +
+          (item.number || 1),
+          padding,
+          y
+        );
 
+        y += 30;
 
-    /*
-     * TOTAL
-     */
+        if (
+          item.comment &&
+          item.comment.trim() !== ""
+        ) {
 
-    ctx.fillStyle =
-      "#555555";
+          ctx.fillStyle =
+            "#555555";
 
-    ctx.font =
-      "18px Arial";
+          ctx.font =
+            "18px Arial";
 
-    ctx.fillText(
-      "Total",
-      650,
-      110
-    );
+          const words =
+            item.comment
+              .trim()
+              .split(" ");
 
-    ctx.fillStyle =
-      "#3b82f6";
+          let line = "";
 
-    ctx.font =
-      "bold 32px Arial";
+          words.forEach(
+            function(word) {
 
-    ctx.fillText(
-      String(total),
-      650,
-      145
-    );
+              const testLine =
+                line +
+                word +
+                " ";
 
+              const metrics =
+                ctx.measureText(
+                  testLine
+                );
 
-    /*
-     * ITEMS
-     */
+              if (
+                metrics.width >
+                width -
+                padding * 2
+              ) {
 
-    let y = 210;
+                ctx.fillText(
+                  line,
+                  padding,
+                  y
+                );
 
+                y +=
+                  lineHeight;
 
-    items.forEach(
-      function(item) {
+                line =
+                  word + " ";
 
-        ctx.fillStyle =
-          "#111111";
+              } else {
 
-        ctx.font =
-          "bold 20px Arial";
+                line =
+                  testLine;
 
+              }
 
-        ctx.fillText(
-          item.title +
-          " — " +
-          (item.number || 1),
-          padding,
-          y
-        );
+            }
+          );
 
+          if (
+            line.trim() !== ""
+          ) {
 
-        y += 30;
+            ctx.fillText(
+              line,
+              padding,
+              y
+            );
 
+            y +=
+              lineHeight;
 
-        if (
-          item.comment &&
-          item.comment.trim() !== ""
-        ) {
+          }
 
-          ctx.fillStyle =
-            "#555555";
+        }
 
-          ctx.font =
-            "18px Arial";
+        y +=
+          itemSpacing;
 
+      }
+    );
 
-          const words =
-            item.comment
-              .trim()
-              .split(" ");
+    /*
+     * CREATE PNG
+     */
 
+    canvas.toBlob(
+      async function(blob) {
 
-          let line = "";
+        if (!blob) {
 
+          alert(
+            "Could not create the report image."
+          );
 
-          words.forEach(
-            function(word) {
+          return;
 
-              const testLine =
-                line +
-                word +
-                " ";
+        }
 
-              const metrics =
-                ctx.measureText(
-                  testLine
-                );
+        const fileName =
+          "Daily-Report-" +
+          reportDateText.replace(
+            /\//g,
+            "-"
+          ) +
+          ".png";
 
+        /*
+         * iPhone / iPad
+         */
 
-              if (
-                metrics.width >
-                width -
-                padding * 2
-              ) {
+        if (
+          /iPad|iPhone|iPod/.test(
+            navigator.userAgent
+          ) &&
+          !window.MSStream
+        ) {
 
-                ctx.fillText(
-                  line,
-                  padding,
-                  y
-                );
+          const file =
+            new File(
+              [blob],
+              fileName,
+              {
+                type: "image/png"
+              }
+            );
 
-                y +=
-                  lineHeight;
+          if (
+            navigator.share &&
+            navigator.canShare &&
+            navigator.canShare({
+              files: [file]
+            })
+          ) {
 
-                line =
-                  word + " ";
+            try {
 
-              } else {
+              await navigator.share({
+                files: [file],
+                title: "Daily Report"
+              });
 
-                line =
-                  testLine;
+            } catch (error) {
 
-              }
+              if (
+                error.name !==
+                "AbortError"
+              ) {
 
-            }
-          );
+                alert(
+                  "Could not share the report image."
+                );
 
+              }
 
-          if (
-            line.trim() !== ""
-          ) {
+            }
 
-            ctx.fillText(
-              line,
-              padding,
-              y
-            );
+          } else {
 
-            y +=
-              lineHeight;
+            /*
+             * Fallback for older iOS
+             */
 
-          }
+            const imageURL =
+              URL.createObjectURL(
+                blob
+              );
 
-        }
+            window.open(
+              imageURL,
+              "_blank"
+            );
 
+          }
 
-        y +=
-          itemSpacing;
+          return;
 
-      }
-    );
+        }
 
+        /*
+         * Android / Desktop
+         */
 
-    /*
-     * DOWNLOAD PNG
-     */
+        const imageURL =
+          URL.createObjectURL(
+            blob
+          );
 
-    const link =
-      document.createElement(
-        "a"
-      );
+        const link =
+          document.createElement(
+            "a"
+          );
 
-    link.download =
-      "Daily-Report-" +
-      reportDateText.replace(
-        /\//g,
-        "-"
-      ) +
-      ".png";
+        link.download =
+          fileName;
 
+        link.href =
+          imageURL;
 
-    link.href =
-      canvas.toDataURL(
-        "image/png"
-      );
+        document.body.appendChild(
+          link
+        );
 
+        link.click();
 
-    link.click();
+        link.remove();
 
-  }
+        setTimeout(
+          function() {
+
+            URL.revokeObjectURL(
+              imageURL
+            );
+
+          },
+          1000
+        );
+
+      },
+      "image/png"
+    );
+
+  }
 );
 
 /* SERVICE WORKER */
