@@ -789,6 +789,18 @@ const savedDate =
 
 reportDate.value =
   savedDate || todayString;
+  reportDate.addEventListener(
+  "change",
+  function() {
+
+    localStorage.setItem(
+      "reportingDate",
+      reportDate.value
+    );
+
+  }
+);
+
 /* AUTO CLEANUP - 3 DAYS */
 
 const STORAGE_EXPIRATION_MS =
