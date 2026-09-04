@@ -1334,9 +1334,29 @@ function saveItems() {
 
 
   localStorage.setItem(
-    "reportingItems",
-    JSON.stringify(items)
-  );
+  "reportingItems",
+  JSON.stringify(items)
+);
+
+localStorage.setItem(
+  "reportingDate",
+  reportDate.value
+);
+
+
+
+/* START 3-DAY TIMER */
+
+if (
+  !localStorage.getItem(
+    "reportingCreatedAt"
+  )
+) {
+
+  localStorage.setItem(
+    "reportingCreatedAt",
+    Date.now().toString()
+  );
 
 }
 
