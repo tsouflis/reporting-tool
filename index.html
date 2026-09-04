@@ -789,22 +789,45 @@ const savedDate =
 
 reportDate.value =
   savedDate || todayString;
+/* AUTO CLEANUP - 3 DAYS */
 
+const STORAGE_EXPIRATION_MS =
+  3 * 24 * 60 * 60 * 1000;
 
-/* TOTAL */
+let savedAt =
+  localStorage.getItem("reportingCreatedAt");
 
-function updateTotal() {
+if (savedAt) {
 
-  const allItems = list.children;
-  let total = 0;
+  const now = Date.now();
 
-  for (let i = 0; i < allItems.length; i++) {
-    const picker = allItems[i].querySelector(".item-picker");
-    total += parseInt(picker?.dataset.value || 0);
+  if (
+    now - parseInt(savedAt) >=
+    STORAGE_EXPIRATION_MS
+  ) {
+
+    localStorage.removeItem("reportingItems");
+    localStorage.removeItem("reportingDate");
+    localStorage.removeItem("reportingCreatedAt");
+
+    reportDate.value =
+      todayString;
+
+    savedAt = null;
   }
-
-  totalValue.textContent = total;
 }
+
+/* CREATE TIMESTAMP */
+
+if (!savedAt) {
+
+  localStorage.setItem(
+    "reportingCreatedAt",
+    Date.now().toString()
+  );
+
+}
+
 
 
 /* PICKER OPTIONS */
