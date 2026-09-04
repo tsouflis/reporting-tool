@@ -1293,108 +1293,113 @@ updateTotal();
 
 function saveItems() {
 
-  const items = [];
+  const items = [];
 
-  const allItems =
-    list.children;
-
-
-  for (
-    let i = 0;
-    i < allItems.length;
-    i++
-  ) {
-
-    const text =
-      allItems[i].querySelector(
-        ".item-title"
-      );
-
-    const comment =
-      allItems[i].querySelector(
-        ".comment-input"
-      );
-
-    const picker =
-      allItems[i].querySelector(
-        ".item-picker"
-      );
+  const allItems =
+    list.children;
 
 
-    items.push({
 
-      title:
-        text.textContent,
+  for (
+    let i = 0;
+    i < allItems.length;
+    i++
+  ) {
 
-      comment:
-        comment.value,
+    const text =
+      allItems[i].querySelector(
+        ".item-title"
+      );
 
-      number:
-        parseInt(
-          picker.dataset.value
-        )
+    const comment =
+      allItems[i].querySelector(
+        ".comment-input"
+      );
 
-    });
-
-  }
-
-
-  localStorage.setItem(
-  "reportingItems",
-  JSON.stringify(items)
-);
-
-localStorage.setItem(
-  "reportingDate",
-  reportDate.value
-);
-
-if (
-  !localStorage.getItem(
-    "reportingCreatedAt"
-  )
-) {
-  localStorage.setItem(
-    "reportingCreatedAt",
-    Date.now().toString()
-  );
-}
+    const picker =
+      allItems[i].querySelector(
+        ".item-picker"
+      );
 
 
-/* START 3-DAY TIMER */
 
-if (
-  !localStorage.getItem(
-    "reportingCreatedAt"
-  )
-) {
+    items.push({
+
+      title:
+        text.textContent,
+
+      comment:
+        comment.value,
+
+      number:
+        parseInt(
+          picker.dataset.value
+        )
+
+    });
+
+  }
+
+
 
   localStorage.setItem(
-    "reportingCreatedAt",
-    Date.now().toString()
+    "reportingItems",
+    JSON.stringify(items)
   );
 
+
+
+  localStorage.setItem(
+    "reportingDate",
+    reportDate.value
+  );
+
+
+
+  /*
+   * START 3-DAY TIMER
+   *
+   * The timer starts only the first
+   * time the report is actually saved.
+   * Editing the report does NOT reset it.
+   */
+
+  if (
+    !localStorage.getItem(
+      "reportingCreatedAt"
+    )
+  ) {
+
+    localStorage.setItem(
+      "reportingCreatedAt",
+      Date.now().toString()
+    );
+
+  }
+
 }
+
 
 
 /* FORMAT DATE */
 
 function formatDate(
-  dateString
+  dateString
 ) {
 
-  const parts =
-    dateString.split("-");
+  const parts =
+    dateString.split("-");
 
-  return (
-    parts[2] +
-    "/" +
-    parts[1] +
-    "/" +
-    parts[0]
-  );
+  return (
+    parts[2] +
+    "/" +
+    parts[1] +
+    "/" +
+    parts[0]
+  );
 
 }
+
 
 
 /* SEND EMAIL */
