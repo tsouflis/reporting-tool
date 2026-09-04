@@ -1269,8 +1269,25 @@ function createItem(
 }
 
 
-updateTotal();
+function updateTotal() {
+  const allItems = list.children;
+  let total = 0;
 
+  for (let i = 0; i < allItems.length; i++) {
+    const picker =
+      allItems[i].querySelector(".item-picker");
+
+    total += parseInt(
+      picker?.dataset.value || 0
+    );
+  }
+
+  totalValue.textContent = total;
+}
+
+
+
+updateTotal();
 
 /* SAVE */
 
