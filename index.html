@@ -829,17 +829,6 @@ if (savedAt) {
   }
 }
 
-/* CREATE TIMESTAMP */
-
-if (!savedAt) {
-
-  localStorage.setItem(
-    "reportingCreatedAt",
-    Date.now().toString()
-  );
-
-}
-
 
 
 /* PICKER OPTIONS */
@@ -1343,6 +1332,16 @@ localStorage.setItem(
   reportDate.value
 );
 
+if (
+  !localStorage.getItem(
+    "reportingCreatedAt"
+  )
+) {
+  localStorage.setItem(
+    "reportingCreatedAt",
+    Date.now().toString()
+  );
+}
 
 
 /* START 3-DAY TIMER */
