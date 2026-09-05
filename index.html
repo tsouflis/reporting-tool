@@ -721,1232 +721,1607 @@
 <script>
 
 const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbwF_7RIdIDYksgPkZnj7R_Tr50tfLUeLyaqJcmPyjqI7I084JzsVqHBFx_oQ0NMVDruXg/exec";
-
+"https://script.google.com/macros/s/AKfycbwF_7RIdIDYksgPkZnj7R_Tr50tfLUeLyaqJcmPyjqI7I084JzsVqHBFx_oQ0NMVDruXg/exec";
 
 const button =
-  document.getElementById("addButton");
+document.getElementById("addButton");
 
 const list =
-  document.getElementById("list");
+document.getElementById("list");
 
 const sendButton =
-  document.getElementById("sendButton");
+document.getElementById("sendButton");
+
+const downloadButton =
+document.getElementById("downloadButton");
 
 const reportDate =
-  document.getElementById("reportDate");
+document.getElementById("reportDate");
 
 const totalValue =
-  document.getElementById("totalValue");
+document.getElementById("totalValue");
 
 const pickerOverlay =
-  document.getElementById("pickerOverlay");
+document.getElementById("pickerOverlay");
 
 const pickerList =
-  document.getElementById("pickerList");
+document.getElementById("pickerList");
 
 const pickerTitle =
-  document.getElementById("pickerTitle");
+document.getElementById("pickerTitle");
 
 const pickerCancel =
-  document.getElementById("pickerCancel");
+document.getElementById("pickerCancel");
 
 const pickerDone =
-  document.getElementById("pickerDone");
-
+document.getElementById("pickerDone");
 
 let pickerMode = "reason";
 let pickerItem = null;
 
-
-/* DATE */
+/* =========================
+DATE
+========================= */
 
 const today =
-  new Date();
+new Date();
 
 const year =
-  today.getFullYear();
+today.getFullYear();
 
 const month =
-  String(
-    today.getMonth() + 1
-  ).padStart(2, "0");
+String(
+today.getMonth() + 1
+).padStart(2, "0");
 
 const day =
-  String(
-    today.getDate()
-  ).padStart(2, "0");
+String(
+today.getDate()
+).padStart(2, "0");
 
 const todayString =
-  year + "-" +
-  month + "-" +
-  day;
+year +
+"-" +
+month +
+"-" +
+day;
 
 const savedDate =
-  localStorage.getItem(
-    "reportingDate"
-  );
-
-reportDate.value =
-  savedDate || todayString;
-  reportDate.addEventListener(
-  "change",
-  function() {
-
-    localStorage.setItem(
-      "reportingDate",
-      reportDate.value
-    );
-
-  }
+localStorage.getItem(
+"reportingDate"
 );
 
-/* AUTO CLEANUP - 3 DAYS */
+reportDate.value =
+savedDate ||
+todayString;
+
+reportDate.addEventListener(
+"change",
+function() {
+
+localStorage.setItem(
+"reportingDate",
+reportDate.value
+);
+
+}
+);
+
+/* =========================
+AUTO CLEANUP - 3 DAYS
+========================= */
 
 const STORAGE_EXPIRATION_MS =
-  3 * 24 * 60 * 60 * 1000;
+3 * 24 * 60 * 60 * 1000;
 
 let savedAt =
-  localStorage.getItem("reportingCreatedAt");
+localStorage.getItem(
+"reportingCreatedAt"
+);
 
 if (savedAt) {
 
-  const now = Date.now();
+const now =
+Date.now();
 
-  if (
-    now - parseInt(savedAt) >=
-    STORAGE_EXPIRATION_MS
-  ) {
+if (
+now -
+parseInt(savedAt) >=
+STORAGE_EXPIRATION_MS
+) {
 
-    localStorage.removeItem("reportingItems");
-    localStorage.removeItem("reportingDate");
-    localStorage.removeItem("reportingCreatedAt");
+localStorage.removeItem(
+"reportingItems"
+);
 
-    reportDate.value =
-      todayString;
+localStorage.removeItem(
+"reportingDate"
+);
 
-    savedAt = null;
-  }
+localStorage.removeItem(
+"reportingCreatedAt"
+);
+
+reportDate.value =
+todayString;
+
+savedAt = null;
+
 }
 
+}
 
-
-/* PICKER OPTIONS */
+/* =========================
+PICKER OPTIONS
+========================= */
 
 const reasons = [
-  "Customer does not want the order anymore.",
-  "Late Delivery",
-  "Damaged / Spilled Item",
-  "Never Delivered / Hijack",
-  "Mistake by user",
-  "ETA too long",
-  "Change of mind- customer cancelled",
-  "Wrong Items Delivered",
-  "Duplicate Order",
-  "Outside Delivery Area",
-  "Unable to find User",
-  "Bad Weather",
-  "Accident",
-  "Unable to pay",
-  "Prank",
-  "Unprofessional behaviour (Rider)",
-  "Voucher not applied",
-  "Address incomplete / misstated",
-  "Order modification not possible",
-  "Customer received wrong order",
-  "Order Quality",
-  "Technical Problem",
-  "Other"
-];
 
+"Customer does not want the order anymore.",
+
+"Late Delivery",
+
+"Damaged / Spilled Item",
+
+"Never Delivered / Hijack",
+
+"Mistake by user",
+
+"ETA too long",
+
+"Change of mind- customer cancelled",
+
+"Wrong Items Delivered",
+
+"Duplicate Order",
+
+"Outside Delivery Area",
+
+"Unable to find User",
+
+"Bad Weather",
+
+"Accident",
+
+"Unable to pay",
+
+"Prank",
+
+"Unprofessional behaviour (Rider)",
+
+"Voucher not applied",
+
+"Address incomplete / misstated",
+
+"Order modification not possible",
+
+"Customer received wrong order",
+
+"Order Quality",
+
+"Technical Problem",
+
+"Other"
+
+];
 
 function renderPickerOptions(mode) {
 
-  pickerList.innerHTML = "";
+pickerList.innerHTML = "";
 
-  if (mode === "reason") {
+if (
+mode === "reason"
+) {
 
-    reasons.forEach(function(reason) {
-      const element = document.createElement("div");
-      element.className = "picker-reason";
-      element.textContent = reason;
-      element.dataset.value = reason;
-      pickerList.appendChild(element);
-    });
+reasons.forEach(
+function(reason) {
 
-  } else {
+const element =
+document.createElement(
+"div"
+);
 
-    for (let number = 1; number <= 50; number++) {
-      const element = document.createElement("div");
-      element.className = "picker-number";
-      element.textContent = number;
-      element.dataset.value = number;
-      pickerList.appendChild(element);
-    }
+element.className =
+"picker-reason";
 
-  }
+element.textContent =
+reason;
+
+element.dataset.value =
+reason;
+
+pickerList.appendChild(
+element
+);
+
+}
+);
+
+} else {
+
+for (
+let number = 1;
+number <= 50;
+number++
+) {
+
+const element =
+document.createElement(
+"div"
+);
+
+element.className =
+"picker-number";
+
+element.textContent =
+number;
+
+element.dataset.value =
+number;
+
+pickerList.appendChild(
+element
+);
+
 }
 
+}
 
-/* ADD / REASON PICKER */
+}
 
-button.addEventListener("click", function() {
+/* =========================
+ADD / REASON PICKER
+========================= */
 
-  pickerMode = "reason";
-  pickerItem = null;
-  pickerTitle.textContent = "Select Reason";
-  openPicker(reasons[0]);
+button.addEventListener(
+"click",
+function() {
+
+pickerMode =
+"reason";
+
+pickerItem =
+null;
+
+pickerTitle.textContent =
+"Select Reason";
+
+openPicker(
+reasons[0]
+);
+
+}
+);
+
+/* =========================
+OPEN PICKER
+========================= */
+
+function openPicker(
+current
+) {
+
+renderPickerOptions(
+pickerMode
+);
+
+pickerOverlay.classList.add(
+"active"
+);
+
+setTimeout(
+function() {
+
+if (
+pickerMode ===
+"reason"
+) {
+
+scrollToReason(
+current,
+false
+);
+
+} else {
+
+scrollToNumber(
+current,
+false
+);
+
+}
+
+},
+50
+);
+
+}
+
+/* =========================
+SCROLL NUMBER
+========================= */
+
+function scrollToNumber(
+number,
+smooth
+) {
+
+const element =
+pickerList.querySelector(
+'[data-value="' +
+number +
+'"]'
+);
+
+if (!element) return;
+
+element.scrollIntoView({
+behavior:
+smooth
+? "smooth"
+: "auto",
+
+block:
+"center"
+});
+
+}
+
+/* =========================
+SCROLL REASON
+========================= */
+
+function scrollToReason(
+reason,
+smooth
+) {
+
+const elements =
+pickerList.querySelectorAll(
+".picker-reason"
+);
+
+let element =
+null;
+
+elements.forEach(
+function(item) {
+
+if (
+item.dataset.value ===
+reason
+) {
+
+element =
+item;
+
+}
+
+}
+);
+
+if (!element)
+element =
+elements[0];
+
+if (!element)
+return;
+
+element.scrollIntoView({
+
+behavior:
+smooth
+? "smooth"
+: "auto",
+
+block:
+"center"
 
 });
 
-
-function openPicker(current) {
-
-  renderPickerOptions(pickerMode);
-  pickerOverlay.classList.add("active");
-
-  setTimeout(function() {
-    if (pickerMode === "reason") {
-      scrollToReason(current, false);
-    } else {
-      scrollToNumber(current, false);
-    }
-  }, 50);
-
 }
 
-
-function scrollToNumber(number, smooth) {
-
-  const element = pickerList.querySelector('[data-value="' + number + '"]');
-  if (!element) return;
-
-  element.scrollIntoView({
-    behavior: smooth ? "smooth" : "auto",
-    block: "center"
-  });
-}
-
-
-function scrollToReason(reason, smooth) {
-
-  const elements = pickerList.querySelectorAll(".picker-reason");
-  let element = null;
-
-  elements.forEach(function(item) {
-    if (item.dataset.value === reason) element = item;
-  });
-
-  if (!element) element = elements[0];
-  if (!element) return;
-
-  element.scrollIntoView({
-    behavior: smooth ? "smooth" : "auto",
-    block: "center"
-  });
-}
-
+/* =========================
+GET SELECTED NUMBER
+========================= */
 
 function getSelectedNumber() {
 
-  const elements = pickerList.querySelectorAll(".picker-number");
-  const rect = pickerList.getBoundingClientRect();
-  const center = rect.top + rect.height / 2;
-  let closest = null;
-  let closestDistance = Infinity;
+const elements =
+pickerList.querySelectorAll(
+".picker-number"
+);
 
-  elements.forEach(function(element) {
-    const elementRect = element.getBoundingClientRect();
-    const elementCenter = elementRect.top + elementRect.height / 2;
-    const distance = Math.abs(center - elementCenter);
-    if (distance < closestDistance) {
-      closestDistance = distance;
-      closest = element;
-    }
-  });
+const rect =
+pickerList.getBoundingClientRect();
 
-  return closest ? parseInt(closest.dataset.value) : 1;
+const center =
+rect.top +
+rect.height / 2;
+
+let closest =
+null;
+
+let closestDistance =
+Infinity;
+
+elements.forEach(
+function(element) {
+
+const elementRect =
+element.getBoundingClientRect();
+
+const elementCenter =
+elementRect.top +
+elementRect.height / 2;
+
+const distance =
+Math.abs(
+center -
+elementCenter
+);
+
+if (
+distance <
+closestDistance
+) {
+
+closestDistance =
+distance;
+
+closest =
+element;
+
 }
 
+}
+);
+
+return closest
+? parseInt(
+closest.dataset.value
+)
+: 1;
+
+}
+
+/* =========================
+GET SELECTED REASON
+========================= */
 
 function getSelectedReason() {
 
-  const elements = pickerList.querySelectorAll(".picker-reason");
-  const rect = pickerList.getBoundingClientRect();
-  const center = rect.top + rect.height / 2;
-  let closest = null;
-  let closestDistance = Infinity;
-
-  elements.forEach(function(element) {
-    const elementRect = element.getBoundingClientRect();
-    const elementCenter = elementRect.top + elementRect.height / 2;
-    const distance = Math.abs(center - elementCenter);
-    if (distance < closestDistance) {
-      closestDistance = distance;
-      closest = element;
-    }
-  });
-
-  return closest ? closest.dataset.value : reasons[0];
-}
-
-
-/* PICKER DONE */
-
-pickerDone.addEventListener(
-  "click",
-  function() {
-
-    if (pickerMode === "reason") {
-
-      const selectedReason = getSelectedReason();
-      createItem(selectedReason, "", 1);
-      saveItems();
-      updateTotal();
-
-    }
-
-
-    if (pickerMode === "item" && pickerItem) {
-
-      const selected = getSelectedNumber();
-
-      const display =
-        pickerItem.querySelector(
-          ".item-picker"
-        );
-
-      display.dataset.value = selected;
-      display.textContent = selected;
-
-      saveItems();
-      updateTotal();
-
-    }
-
-
-    pickerOverlay.classList.remove(
-      "active"
-    );
-
-  }
+const elements =
+pickerList.querySelectorAll(
+".picker-reason"
 );
 
+const rect =
+pickerList.getBoundingClientRect();
 
-/* CANCEL */
+const center =
+rect.top +
+rect.height / 2;
 
-pickerCancel.addEventListener(
-  "click",
-  function() {
+let closest =
+null;
 
-    pickerOverlay.classList.remove(
-      "active"
-    );
+let closestDistance =
+Infinity;
 
-  }
+elements.forEach(
+function(element) {
+
+const elementRect =
+element.getBoundingClientRect();
+
+const elementCenter =
+elementRect.top +
+elementRect.height / 2;
+
+const distance =
+Math.abs(
+center -
+elementCenter
 );
 
-
-/* CLOSE OVERLAY */
-
-pickerOverlay.addEventListener(
-  "click",
-  function(event) {
-
-    if (
-      event.target ===
-      pickerOverlay
-    ) {
-
-      pickerOverlay.classList.remove(
-        "active"
-      );
-
-    }
-
-  }
-);
-
-
-/* LOAD ITEMS */
-
-const savedItems =
-  JSON.parse(
-    localStorage.getItem(
-      "reportingItems"
-    )
-  ) || [];
-
-
-savedItems.forEach(
-  function(item) {
-
-    if (
-      typeof item === "string"
-    ) {
-
-      createItem(
-        item,
-        "",
-        1
-      );
-
-    } else {
-
-      createItem(
-        item.title || "",
-        item.comment || "",
-        item.number || 1
-      );
-
-    }
-
-  }
-);
-
-
-/* CREATE ITEM */
-
-function createItem(
-  value,
-  comment,
-  number
+if (
+distance <
+closestDistance
 ) {
 
-  const item =
-    document.createElement("div");
+closestDistance =
+distance;
 
-  item.className =
-    "item";
-
-
-  const header =
-    document.createElement("div");
-
-  header.className =
-    "item-header";
-
-
-  /* TITLE */
-
-  const text =
-    document.createElement("div");
-
-  text.className =
-    "item-title";
-
-  text.textContent =
-    value;
-
-
-  text.addEventListener(
-    "click",
-    function() {
-
-      item.classList.toggle(
-        "expanded"
-      );
-
-    }
-  );
-
-
-  /* PICKER */
-
-  const itemPicker =
-    document.createElement("div");
-
-  itemPicker.className =
-    "item-picker";
-
-  itemPicker.dataset.value =
-    number || 1;
-
-  itemPicker.textContent =
-    number || 1;
-
-
-  itemPicker.addEventListener(
-    "click",
-    function(event) {
-
-      event.stopPropagation();
-
-      pickerMode =
-        "item";
-
-      pickerItem =
-        item;
-
-      pickerTitle.textContent =
-        "Select number";
-
-      openPicker(
-        parseInt(
-          itemPicker.dataset.value
-        )
-      );
-
-    }
-  );
-
-
-  /* DELETE */
-
-  const deleteButton =
-    document.createElement("button");
-
-  deleteButton.className =
-    "delete-button";
-
-  deleteButton.textContent =
-    "Delete";
-
-
-  deleteButton.addEventListener(
-    "click",
-    function(event) {
-
-      event.stopPropagation();
-
-      item.remove();
-
-      saveItems();
-      updateTotal();
-
-    }
-  );
-
-
-  /* COMMENT */
-
-  const commentArea =
-    document.createElement("div");
-
-  commentArea.className =
-    "comment-area";
-
-
-  const commentInput =
-    document.createElement("textarea");
-
-  commentInput.className =
-    "comment-input";
-
-  commentInput.placeholder =
-    "Enter comment / feedback...";
-
-  commentInput.value =
-    comment || "";
-
-
-  commentInput.addEventListener(
-    "input",
-    function() {
-
-      saveItems();
-
-    }
-  );
-
-
-  /* BUILD */
-
-  header.appendChild(text);
-  header.appendChild(itemPicker);
-  header.appendChild(deleteButton);
-
-  commentArea.appendChild(
-    commentInput
-  );
-
-  item.appendChild(header);
-  item.appendChild(commentArea);
-
-  list.appendChild(item);
-  updateTotal();
+closest =
+element;
 
 }
 
+}
+);
 
-function updateTotal() {
-  const allItems = list.children;
-  let total = 0;
+return closest
+? closest.dataset.value
+: reasons[0];
 
-  for (let i = 0; i < allItems.length; i++) {
-    const picker =
-      allItems[i].querySelector(".item-picker");
-
-    total += parseInt(
-      picker?.dataset.value || 0
-    );
-  }
-
-  totalValue.textContent = total;
 }
 
+/* =========================
+PICKER DONE
+========================= */
 
+pickerDone.addEventListener(
+"click",
+function() {
+
+if (
+pickerMode ===
+"reason"
+) {
+
+const selectedReason =
+getSelectedReason();
+
+createItem(
+selectedReason,
+"",
+1
+);
+
+saveItems();
 
 updateTotal();
 
-/* SAVE */
+}
+
+if (
+pickerMode ===
+"item" &&
+pickerItem
+) {
+
+const selected =
+getSelectedNumber();
+
+const display =
+pickerItem.querySelector(
+".item-picker"
+);
+
+display.dataset.value =
+selected;
+
+display.textContent =
+selected;
+
+saveItems();
+
+updateTotal();
+
+}
+
+pickerOverlay.classList.remove(
+"active"
+);
+
+}
+);
+
+/* =========================
+CANCEL
+========================= */
+
+pickerCancel.addEventListener(
+"click",
+function() {
+
+pickerOverlay.classList.remove(
+"active"
+);
+
+}
+);
+
+/* =========================
+CLOSE OVERLAY
+========================= */
+
+pickerOverlay.addEventListener(
+"click",
+function(event) {
+
+if (
+event.target ===
+pickerOverlay
+) {
+
+pickerOverlay.classList.remove(
+"active"
+);
+
+}
+
+}
+);
+
+/* =========================
+CREATE ITEM
+========================= */
+
+function createItem(
+value,
+comment,
+number
+) {
+
+const item =
+document.createElement(
+"div"
+);
+
+item.className =
+"item";
+
+const header =
+document.createElement(
+"div"
+);
+
+header.className =
+"item-header";
+
+/* TITLE */
+
+const text =
+document.createElement(
+"div"
+);
+
+text.className =
+"item-title";
+
+text.textContent =
+value;
+
+text.addEventListener(
+"click",
+function() {
+
+item.classList.toggle(
+"expanded"
+);
+
+}
+);
+
+/* PICKER */
+
+const itemPicker =
+document.createElement(
+"div"
+);
+
+itemPicker.className =
+"item-picker";
+
+itemPicker.dataset.value =
+number || 1;
+
+itemPicker.textContent =
+number || 1;
+
+itemPicker.addEventListener(
+"click",
+function(event) {
+
+event.stopPropagation();
+
+pickerMode =
+"item";
+
+pickerItem =
+item;
+
+pickerTitle.textContent =
+"Select number";
+
+openPicker(
+parseInt(
+itemPicker.dataset.value
+)
+);
+
+}
+);
+
+/* DELETE */
+
+const deleteButton =
+document.createElement(
+"button"
+);
+
+deleteButton.className =
+"delete-button";
+
+deleteButton.textContent =
+"Delete";
+
+deleteButton.addEventListener(
+"click",
+function(event) {
+
+event.stopPropagation();
+
+item.remove();
+
+saveItems();
+
+updateTotal();
+
+}
+);
+
+/* COMMENT */
+
+const commentArea =
+document.createElement(
+"div"
+);
+
+commentArea.className =
+"comment-area";
+
+const commentInput =
+document.createElement(
+"textarea"
+);
+
+commentInput.className =
+"comment-input";
+
+commentInput.placeholder =
+"Enter comment / feedback...";
+
+commentInput.value =
+comment || "";
+
+commentInput.addEventListener(
+"input",
+function() {
+
+saveItems();
+
+}
+);
+
+/* BUILD */
+
+header.appendChild(
+text
+);
+
+header.appendChild(
+itemPicker
+);
+
+header.appendChild(
+deleteButton
+);
+
+commentArea.appendChild(
+commentInput
+);
+
+item.appendChild(
+header
+);
+
+item.appendChild(
+commentArea
+);
+
+list.appendChild(
+item
+);
+
+updateTotal();
+
+}
+
+/* =========================
+UPDATE TOTAL
+========================= */
+
+function updateTotal() {
+
+const allItems =
+list.children;
+
+let total =
+0;
+
+for (
+let i = 0;
+i < allItems.length;
+i++
+) {
+
+const picker =
+allItems[i].querySelector(
+".item-picker"
+);
+
+total +=
+parseInt(
+picker.dataset.value ||
+0
+);
+
+}
+
+totalValue.textContent =
+total;
+
+}
+
+/* =========================
+SAVE ITEMS
+========================= */
 
 function saveItems() {
 
-  const items = [];
+const items =
+[];
 
-  const allItems =
-    list.children;
+const allItems =
+list.children;
 
-
-
-  for (
-    let i = 0;
-    i < allItems.length;
-    i++
-  ) {
-
-    const text =
-      allItems[i].querySelector(
-        ".item-title"
-      );
-
-    const comment =
-      allItems[i].querySelector(
-        ".comment-input"
-      );
-
-    const picker =
-      allItems[i].querySelector(
-        ".item-picker"
-      );
-
-
-
-    items.push({
-
-      title:
-        text.textContent,
-
-      comment:
-        comment.value,
-
-      number:
-        parseInt(
-          picker.dataset.value
-        )
-
-    });
-
-  }
-
-
-
-  localStorage.setItem(
-    "reportingItems",
-    JSON.stringify(items)
-  );
-
-
-
-  localStorage.setItem(
-    "reportingDate",
-    reportDate.value
-  );
-
-
-
-  /*
-   * START 3-DAY TIMER
-   *
-   * The timer starts only the first
-   * time the report is actually saved.
-   * Editing the report does NOT reset it.
-   */
-
-  if (
-    !localStorage.getItem(
-      "reportingCreatedAt"
-    )
-  ) {
-
-    localStorage.setItem(
-      "reportingCreatedAt",
-      Date.now().toString()
-    );
-
-  }
-
-}
-
-
-
-/* FORMAT DATE */
-
-function formatDate(
-  dateString
+for (
+let i = 0;
+i < allItems.length;
+i++
 ) {
 
-  const parts =
-    dateString.split("-");
+const text =
+allItems[i].querySelector(
+".item-title"
+);
 
-  return (
-    parts[2] +
-    "/" +
-    parts[1] +
-    "/" +
-    parts[0]
-  );
+const comment =
+allItems[i].querySelector(
+".comment-input"
+);
+
+const picker =
+allItems[i].querySelector(
+".item-picker"
+);
+
+items.push({
+
+title:
+text.textContent,
+
+comment:
+comment.value,
+
+number:
+parseInt(
+picker.dataset.value
+) || 1
+
+});
 
 }
 
+localStorage.setItem(
+"reportingItems",
+JSON.stringify(
+items
+)
+);
 
+localStorage.setItem(
+"reportingDate",
+reportDate.value
+);
 
-/* SAVE TO SPREADSHEET */
+/*
+• START 3-DAY TIMER
+• Starts only the first
+• time the report is saved.
+*/
+
+if (
+!localStorage.getItem(
+"reportingCreatedAt"
+)
+) {
+
+localStorage.setItem(
+"reportingCreatedAt",
+Date.now().toString()
+);
+
+}
+
+}
+
+/* =========================
+LOAD ITEMS
+========================= */
+
+const savedItems =
+JSON.parse(
+localStorage.getItem(
+"reportingItems"
+)
+) || [];
+
+savedItems.forEach(
+function(item) {
+
+if (
+typeof item ===
+"string"
+) {
+
+createItem(
+item,
+"",
+1
+);
+
+} else {
+
+createItem(
+item.title || "",
+item.comment || "",
+item.number || 1
+);
+
+}
+
+}
+);
+
+updateTotal();
+
+/* =========================
+FORMAT DATE
+========================= */
+
+function formatDate(
+dateString
+) {
+
+const parts =
+dateString.split("-");
+
+return (
+parts[2] +
+"/" +
+parts[1] +
+"/" +
+parts[0]
+);
+
+}
+
+/* =========================
+SAVE TO SPREADSHEET
+========================= */
 
 sendButton.addEventListener(
-  "click",
-  async function() {
+"click",
+async function() {
 
-    const allItems =
-      list.children;
+const allItems =
+list.children;
 
-    if (
-      allItems.length === 0
-    ) {
+if (
+allItems.length === 0
+) {
 
-      alert(
-        "Please add at least one reason."
-      );
-
-      return;
-    }
-
-
-
-    const items = [];
-
-
-
-    for (
-      let i = 0;
-      i < allItems.length;
-      i++
-    ) {
-
-      const title =
-        allItems[i]
-          .querySelector(
-            ".item-title"
-          );
-
-      const picker =
-        allItems[i]
-          .querySelector(
-            ".item-picker"
-          );
-
-
-
-      items.push({
-
-        title:
-          title.textContent,
-
-        number:
-          parseInt(
-            picker.dataset.value
-          ) || 1
-
-      });
-
-    }
-
-
-
-    const data = {
-
-      reportDate:
-        reportDate.value,
-
-      items:
-        items
-
-    };
-
-
-
-    try {
-
-      sendButton.disabled =
-        true;
-
-      sendButton.textContent =
-        "Καταχώρηση...";
-
-
-
-      const response =
-        await fetch(
-          SCRIPT_URL,
-          {
-            method: "POST",
-
-            body:
-              new URLSearchParams({
-                data:
-                  JSON.stringify(
-                    data
-                  )
-              })
-          }
-        );
-
-
-
-      const result =
-        await response.text();
-
-
-
-      if (
-        result.indexOf(
-          "Report saved successfully"
-        ) !== -1
-      ) {
-
-        alert(
-          "Η καταχώρηση ολοκληρώθηκε!"
-        );
-
-      } else {
-
-        throw new Error(
-          result
-        );
-
-      }
-
-
-
-    } catch (error) {
-
-      console.error(
-        error
-      );
-
-      alert(
-        "Η καταχώρηση απέτυχε.\n\n" +
-        error.message
-      );
-
-
-
-    } finally {
-
-      sendButton.disabled =
-        false;
-
-      sendButton.textContent =
-        "Καταχώρηση";
-
-    }
-
-  }
+alert(
+"Please add at least one reason."
 );
 
-    /*
-     * CREATE REPORT
-     */
-
-    const canvas =
-      document.createElement(
-        "canvas"
-      );
-
-    const ctx =
-      canvas.getContext(
-        "2d"
-      );
-
-    const width = 900;
-
-    const padding = 60;
-
-    const lineHeight = 28;
-
-    const itemSpacing = 35;
-
-    let height = 260;
-
-    items.forEach(
-      function(item) {
-
-        height += 60;
-
-        if (
-          item.comment &&
-          item.comment.trim() !== ""
-        ) {
-
-          const lines =
-            Math.ceil(
-              item.comment.length / 65
-            );
-
-          height +=
-            lines * lineHeight;
-
-        }
-
-      }
-    );
-
-    canvas.width =
-      width;
-
-    canvas.height =
-      height;
-
-    /*
-     * BACKGROUND
-     */
-
-    ctx.fillStyle =
-      "#ffffff";
-
-    ctx.fillRect(
-      0,
-      0,
-      width,
-      height
-    );
-
-    /*
-     * TITLE
-     */
-
-    ctx.fillStyle =
-      "#0d1b2a";
-
-    ctx.font =
-      "bold 32px Arial";
-
-    ctx.fillText(
-      "Daily Report",
-      padding,
-      65
-    );
-
-    /*
-     * DATE
-     */
-
-    ctx.font =
-      "18px Arial";
-
-    ctx.fillStyle =
-      "#555555";
-
-    ctx.fillText(
-      "Report date",
-      padding,
-      110
-    );
-
-    ctx.fillStyle =
-      "#111111";
-
-    ctx.font =
-      "bold 20px Arial";
-
-    ctx.fillText(
-      reportDateText,
-      padding,
-      140
-    );
-
-    /*
-     * TOTAL
-     */
-
-    ctx.fillStyle =
-      "#555555";
-
-    ctx.font =
-      "18px Arial";
-
-    ctx.fillText(
-      "Total",
-      650,
-      110
-    );
-
-    ctx.fillStyle =
-      "#3b82f6";
-
-    ctx.font =
-      "bold 32px Arial";
-
-    ctx.fillText(
-      String(total),
-      650,
-      145
-    );
-
-    /*
-     * ITEMS
-     */
-
-    let y = 210;
-
-    items.forEach(
-      function(item) {
-
-        ctx.fillStyle =
-          "#111111";
-
-        ctx.font =
-          "bold 20px Arial";
-
-        ctx.fillText(
-          item.title +
-          " — " +
-          (item.number || 1),
-          padding,
-          y
-        );
-
-        y += 30;
-
-        if (
-          item.comment &&
-          item.comment.trim() !== ""
-        ) {
-
-          ctx.fillStyle =
-            "#555555";
-
-          ctx.font =
-            "18px Arial";
-
-          const words =
-            item.comment
-              .trim()
-              .split(" ");
-
-          let line = "";
-
-          words.forEach(
-            function(word) {
-
-              const testLine =
-                line +
-                word +
-                " ";
-
-              const metrics =
-                ctx.measureText(
-                  testLine
-                );
-
-              if (
-                metrics.width >
-                width -
-                padding * 2
-              ) {
-
-                ctx.fillText(
-                  line,
-                  padding,
-                  y
-                );
-
-                y +=
-                  lineHeight;
-
-                line =
-                  word + " ";
-
-              } else {
-
-                line =
-                  testLine;
-
-              }
-
-            }
-          );
-
-          if (
-            line.trim() !== ""
-          ) {
-
-            ctx.fillText(
-              line,
-              padding,
-              y
-            );
-
-            y +=
-              lineHeight;
-
-          }
-
-        }
-
-        y +=
-          itemSpacing;
-
-      }
-    );
-
-    /*
-     * CREATE PNG
-     */
-
-    canvas.toBlob(
-      async function(blob) {
-
-        if (!blob) {
-
-          alert(
-            "Could not create the report image."
-          );
-
-          return;
-
-        }
-
-        const fileName =
-          "Daily-Report-" +
-          reportDateText.replace(
-            /\//g,
-            "-"
-          ) +
-          ".png";
-
-        /*
-         * iPhone / iPad
-         */
-
-        if (
-          /iPad|iPhone|iPod/.test(
-            navigator.userAgent
-          ) &&
-          !window.MSStream
-        ) {
-
-          const file =
-            new File(
-              [blob],
-              fileName,
-              {
-                type: "image/png"
-              }
-            );
-
-          if (
-            navigator.share &&
-            navigator.canShare &&
-            navigator.canShare({
-              files: [file]
-            })
-          ) {
-
-            try {
-
-              await navigator.share({
-                files: [file],
-                title: "Daily Report"
-              });
-
-            } catch (error) {
-
-              if (
-                error.name !==
-                "AbortError"
-              ) {
-
-                alert(
-                  "Could not share the report image."
-                );
-
-              }
-
-            }
-
-          } else {
-
-            /*
-             * Fallback for older iOS
-             */
-
-            const imageURL =
-              URL.createObjectURL(
-                blob
-              );
-
-            window.open(
-              imageURL,
-              "_blank"
-            );
-
-          }
-
-          return;
-
-        }
-
-        /*
-         * Android / Desktop
-         */
-
-        const imageURL =
-          URL.createObjectURL(
-            blob
-          );
-
-        const link =
-          document.createElement(
-            "a"
-          );
-
-        link.download =
-          fileName;
-
-        link.href =
-          imageURL;
-
-        document.body.appendChild(
-          link
-        );
-
-        link.click();
-
-        link.remove();
-
-        setTimeout(
-          function() {
-
-            URL.revokeObjectURL(
-              imageURL
-            );
-
-          },
-          1000
-        );
-
-      },
-      "image/png"
-    );
-
-  }
+return;
+
+}
+
+const items =
+[];
+
+for (
+let i = 0;
+i < allItems.length;
+i++
+) {
+
+const title =
+allItems[i]
+.querySelector(
+".item-title"
 );
 
+const picker =
+allItems[i]
+.querySelector(
+".item-picker"
+);
 
+items.push({
 
-</script>
+title:
+title.textContent,
+
+number:
+parseInt(
+picker.dataset.value
+) || 1
+
+});
+
+}
+
+const data = {
+
+reportDate:
+reportDate.value,
+
+items:
+items
+
+};
+
+try {
+
+sendButton.disabled =
+true;
+
+sendButton.textContent =
+"Καταχώρηση...";
+
+const response =
+await fetch(
+SCRIPT_URL,
+{
+
+method:
+"POST",
+
+body:
+new URLSearchParams({
+
+data:
+JSON.stringify(
+data
+)
+
+})
+
+}
+);
+
+const result =
+await response.text();
+
+if (
+result.indexOf(
+"Report saved successfully"
+) !== -1
+) {
+
+alert(
+"Η καταχώρηση ολοκληρώθηκε!"
+);
+
+} else {
+
+throw new Error(
+result
+);
+
+}
+
+} catch (error) {
+
+console.error(
+error
+);
+
+alert(
+"Η καταχώρηση απέτυχε.\n\n" +
+error.message
+);
+
+} finally {
+
+sendButton.disabled =
+false;
+
+sendButton.textContent =
+"Καταχώρηση";
+
+}
+
+}
+);
+
+/* =========================
+DOWNLOAD REPORT
+========================= */
+
+downloadButton.addEventListener(
+"click",
+function() {
+
+const allItems =
+list.children;
+
+if (
+allItems.length === 0
+) {
+
+alert(
+"Please add at least one reason."
+);
+
+return;
+
+}
+
+const items =
+[];
+
+let total =
+0;
+
+for (
+let i = 0;
+i < allItems.length;
+i++
+) {
+
+const title =
+allItems[i]
+.querySelector(
+".item-title"
+);
+
+const picker =
+allItems[i]
+.querySelector(
+".item-picker"
+);
+
+const comment =
+allItems[i]
+.querySelector(
+".comment-input"
+);
+
+const number =
+parseInt(
+picker.dataset.value
+) || 1;
+
+items.push({
+
+title:
+title.textContent,
+
+number:
+number,
+
+comment:
+comment.value
+
+});
+
+total +=
+number;
+
+}
+
+const reportDateText =
+formatDate(
+reportDate.value
+);
+
+/* CREATE REPORT */
+
+const canvas =
+document.createElement(
+"canvas"
+);
+
+const ctx =
+canvas.getContext(
+"2d"
+);
+
+const width =
+900;
+
+const padding =
+60;
+
+const lineHeight =
+28;
+
+const itemSpacing =
+35;
+
+let height =
+260;
+
+items.forEach(
+function(item) {
+
+height +=
+60;
+
+if (
+item.comment &&
+item.comment.trim() !== ""
+) {
+
+const lines =
+Math.ceil(
+item.comment.length /
+65
+);
+
+height +=
+lines *
+lineHeight;
+
+}
+
+}
+);
+
+canvas.width =
+width;
+
+canvas.height =
+height;
+
+/* BACKGROUND */
+
+ctx.fillStyle =
+"#ffffff";
+
+ctx.fillRect(
+0,
+0,
+width,
+height
+);
+
+/* TITLE */
+
+ctx.fillStyle =
+"#0d1b2a";
+
+ctx.font =
+"bold 32px Arial";
+
+ctx.fillText(
+"Daily Report",
+padding,
+65
+);
+
+/* DATE */
+
+ctx.font =
+"18px Arial";
+
+ctx.fillStyle =
+"#555555";
+
+ctx.fillText(
+"Report date",
+padding,
+110
+);
+
+ctx.fillStyle =
+"#111111";
+
+ctx.font =
+"bold 20px Arial";
+
+ctx.fillText(
+reportDateText,
+padding,
+140
+);
+
+/* TOTAL */
+
+ctx.fillStyle =
+"#555555";
+
+ctx.font =
+"18px Arial";
+
+ctx.fillText(
+"Total",
+650,
+110
+);
+
+ctx.fillStyle =
+"#3b82f6";
+
+ctx.font =
+"bold 32px Arial";
+
+ctx.fillText(
+String(total),
+650,
+145
+);
+
+/* ITEMS */
+
+let y =
+210;
+
+items.forEach(
+function(item) {
+
+ctx.fillStyle =
+"#111111";
+
+ctx.font =
+"bold 20px Arial";
+
+ctx.fillText(
+item.title +
+" — " +
+(item.number || 1),
+padding,
+y
+);
+
+y +=
+30;
+
+if (
+item.comment &&
+item.comment.trim() !== ""
+) {
+
+ctx.fillStyle =
+"#555555";
+
+ctx.font =
+"18px Arial";
+
+const words =
+item.comment
+.trim()
+.split(" ");
+
+let line =
+"";
+
+words.forEach(
+function(word) {
+
+const testLine =
+line +
+word +
+" ";
+
+const metrics =
+ctx.measureText(
+testLine
+);
+
+if (
+metrics.width >
+width -
+padding * 2
+) {
+
+ctx.fillText(
+line,
+padding,
+y
+);
+
+y +=
+lineHeight;
+
+line =
+word +
+" ";
+
+} else {
+
+line =
+testLine;
+
+}
+
+}
+);
+
+if (
+line.trim() !== ""
+) {
+
+ctx.fillText(
+line,
+padding,
+y
+);
+
+y +=
+lineHeight;
+
+}
+
+}
+
+y +=
+itemSpacing;
+
+}
+);
+
+/* CREATE PNG */
+
+canvas.toBlob(
+async function(blob) {
+
+if (!blob) {
+
+alert(
+"Could not create the report image."
+);
+
+return;
+
+}
+
+const fileName =
+"Daily-Report-" +
+reportDateText.replace(
+///g,
+"-"
+) +
+".png";
+
+/* iPHONE / iPAD */
+
+if (
+/iPad|iPhone|iPod/.test(
+navigator.userAgent
+) &&
+!window.MSStream
+) {
+
+const file =
+new File(
+[blob],
+fileName,
+{
+type:
+"image/png"
+}
+);
+
+if (
+navigator.share &&
+navigator.canShare &&
+navigator.canShare({
+files:
+[file]
+})
+) {
+
+try {
+
+await navigator.share({
+
+files:
+[file],
+
+title:
+"Daily Report"
+
+});
+
+} catch (error) {
+
+if (
+error.name !==
+"AbortError"
+) {
+
+alert(
+"Could not share the report image."
+);
+
+}
+
+}
+
+} else {
+
+/* FALLBACK */
+
+const imageURL =
+URL.createObjectURL(
+blob
+);
+
+window.open(
+imageURL,
+"_blank"
+);
+
+}
+
+return;
+
+}
+
+/* ANDROID / DESKTOP */
+
+const imageURL =
+URL.createObjectURL(
+blob
+);
+
+const link =
+document.createElement(
+"a"
+);
+
+link.download =
+fileName;
+
+link.href =
+imageURL;
+
+document.body.appendChild(
+link
+);
+
+link.click();
+
+link.remove();
+
+setTimeout(
+function() {
+
+URL.revokeObjectURL(
+imageURL
+);
+
+},
+1000
+);
+
+},
+"image/png"
+);
+
+}
+);
+
+</script> 
 
 </body>
 </html>
