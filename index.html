@@ -658,7 +658,7 @@
   <div class="send-area">
 
     <button id="sendButton">
-      Send by Email
+      Καταχώρηση
     </button>
     
     <button id="downloadButton">
@@ -1402,191 +1402,31 @@ function formatDate(
 
 
 
-/* SEND EMAIL */
+/* SAVE TO SPREADSHEET */
 
 sendButton.addEventListener(
-  "click",
-  async function() {
-
-    const items = [];
-
-    const allItems =
-      list.children;
-
-
-    for (
-      let i = 0;
-      i < allItems.length;
-      i++
-    ) {
-
-      const text =
-        allItems[i].querySelector(
-          ".item-title"
-        );
-
-      const comment =
-        allItems[i].querySelector(
-          ".comment-input"
-        );
-
-      const picker =
-        allItems[i].querySelector(
-          ".item-picker"
-        );
-
-
-      items.push({
-
-        title:
-          text.textContent,
-
-        comment:
-          comment.value,
-
-        number:
-          parseInt(
-            picker.dataset.value
-          )
-
-      });
-
-    }
-
-
-    if (
-      items.length === 0
-    ) {
-
-      alert(
-        "There are no items to send."
-      );
-
-      return;
-
-    }
-
-
-    const email =
-      prompt(
-        "Enter email address:"
-      );
-
-
-    if (
-      !email ||
-      email.trim() === ""
-    ) {
-
-      return;
-
-    }
-
-
-    const data = {
-
-      email:
-        email.trim(),
-
-      reportDate:
-        formatDate(
-          reportDate.value
-        ),
-
-      total:
-        parseInt(
-          totalValue.textContent
-        ),
-
-      items:
-        items
-
-    };
-
-
-    sendButton.disabled =
-      true;
-
-    sendButton.textContent =
-      "Sending...";
-
-
-    try {
-
-      const form =
-        new URLSearchParams();
-
-      form.append(
-        "data",
-        JSON.stringify(data)
-      );
-
-
-      const response =
-        await fetch(
-          SCRIPT_URL,
-          {
-            method: "POST",
-            body: form
-          }
-        );
-
-
-      const result =
-        await response.text();
-
-
-      if (
-        result.startsWith(
-          "Error:"
-        )
-      ) {
-
-        throw new Error(
-          result
-        );
-
-      }
-
-
-      alert(
-        "Email sent successfully!"
-      );
-
-
-    } catch (error) {
-
-      alert(
-        "Error sending email.\n\n" +
-        error.message
-      );
-
-
-    } finally {
-
-      sendButton.disabled =
-        false;
-
-      sendButton.textContent =
-        "Send by Email";
-
-    }
-
-  }
-);
-
-  const downloadButton =
-  document.getElementById("downloadButton");
-
-
-downloadButton.addEventListener(
   "click",
   async function() {
 
-    const items = [];
-
     const allItems =
       list.children;
+
+    if (
+      allItems.length === 0
+    ) {
+
+      alert(
+        "Please add at least one reason."
+      );
+
+      return;
+    }
+
+
+
+    const items = [];
+
+
 
     for (
       let i = 0;
@@ -1594,59 +1434,126 @@ downloadButton.addEventListener(
       i++
     ) {
 
-      const text =
-        allItems[i].querySelector(
-          ".item-title"
-        );
-
-      const comment =
-        allItems[i].querySelector(
-          ".comment-input"
-        );
+      const title =
+        allItems[i]
+          .querySelector(
+            ".item-title"
+          );
 
       const picker =
-        allItems[i].querySelector(
-          ".item-picker"
-        );
+        allItems[i]
+          .querySelector(
+            ".item-picker"
+          );
+
+
 
       items.push({
 
         title:
-          text.textContent,
-
-        comment:
-          comment.value,
+          title.textContent,
 
         number:
           parseInt(
             picker.dataset.value
-          )
+          ) || 1
 
       });
 
     }
 
-    if (
-      items.length === 0
-    ) {
 
-      alert(
-        "There are no items to download."
+
+    const data = {
+
+      reportDate:
+        reportDate.value,
+
+      items:
+        items
+
+    };
+
+
+
+    try {
+
+      sendButton.disabled =
+        true;
+
+      sendButton.textContent =
+        "Καταχώρηση...";
+
+
+
+      const response =
+        await fetch(
+          SCRIPT_URL,
+          {
+            method: "POST",
+
+            body:
+              new URLSearchParams({
+                data:
+                  JSON.stringify(
+                    data
+                  )
+              })
+          }
+        );
+
+
+
+      const result =
+        await response.text();
+
+
+
+      if (
+        result.indexOf(
+          "Report saved successfully"
+        ) !== -1
+      ) {
+
+        alert(
+          "Η καταχώρηση ολοκληρώθηκε!"
+        );
+
+      } else {
+
+        throw new Error(
+          result
+        );
+
+      }
+
+
+
+    } catch (error) {
+
+      console.error(
+        error
       );
 
-      return;
+      alert(
+        "Η καταχώρηση απέτυχε.\n\n" +
+        error.message
+      );
+
+
+
+    } finally {
+
+      sendButton.disabled =
+        false;
+
+      sendButton.textContent =
+        "Καταχώρηση";
 
     }
 
-    const reportDateText =
-      formatDate(
-        reportDate.value
-      );
-
-    const total =
-      parseInt(
-        totalValue.textContent
-      );
+  }
+);
 
     /*
      * CREATE REPORT
